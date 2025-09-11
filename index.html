@@ -30,9 +30,11 @@
       height: 100%;
       object-fit: cover;
       z-index: 10;
+      transition: opacity 1.5s ease-out;
     }
     .container { 
       display: none; /* Initially hidden */
+      opacity: 0;
       max-width: 800px; 
       margin: 20px auto; 
       padding: 0 20px; 
@@ -43,6 +45,7 @@
       padding: 20px;
       height: 100vh;
       overflow-y: auto; /* Allow scrolling for the container */
+      transition: opacity 1.5s ease-in;
     }
     h1, h2 { color: #fff; }
     h2 { border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 40px;}
@@ -188,27 +191,46 @@
     document.addEventListener('DOMContentLoaded', function() {
       const video = document.getElementById('intro-video');
       const mainContent = document.getElementById('main-content');
-      const p5Canvas = document.getElementById('p5-canvas');
 
-      function showMainContent() {
-        video.style.display = 'none';
-        mainContent.style.display = 'block';
-        document.body.style.overflow = 'auto';
+      function showMainContent(skipVideo) {
+        if (skipVideo) {
+            video.style.display = 'none';
+            mainContent.style.display = 'block';
+            mainContent.style.opacity = '1';
+            document.body.style.overflow = 'auto';
+        } else {
+            // Fade out video
+            video.style.opacity = '0';
+
+            // Fade in content
+            mainContent.style.display = 'block';
+            setTimeout(() => { // Timeout to allow the display property to be applied before opacity transition
+                mainContent.style.opacity = '1';
+            }, 100);
+
+
+            // After fade out, hide video element completely
+            video.addEventListener('transitionend', () => {
+                video.style.display = 'none';
+            });
+
+            document.body.style.overflow = 'auto';
+        }
       }
 
       // Check if the video has been played in this session
       if (sessionStorage.getItem('videoPlayed')) {
-        showMainContent();
+        showMainContent(true);
       } else {
         // Play the video
         video.play().catch(error => {
           // Autoplay was prevented.
           console.log("Autoplay was prevented. Showing content directly.", error);
-          showMainContent();
+          showMainContent(true);
         });
 
         video.onended = () => {
-          showMainContent();
+          showMainContent(false);
           // Set a flag in sessionStorage so it doesn't play again
           sessionStorage.setItem('videoPlayed', 'true');
         };
