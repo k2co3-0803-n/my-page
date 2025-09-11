@@ -37,10 +37,26 @@ class Particle {
     this.pos = createVector(x, y);
     this.vel = p5.Vector.random2D().mult(random(0.5, 2));
     this.size = random(2, 4);
+    this.maxSpeed = 3;
+    this.maxForce = 0.2;
   }
 
   update() {
+    this.repel(createVector(mouseX, mouseY));
     this.pos.add(this.vel);
+  }
+
+  // A method to apply a repulsive force from a target
+  repel(target) {
+    let desired = p5.Vector.sub(this.pos, target);
+    let d = desired.mag();
+    if (d < 100) {
+      // Calculate steering force
+      desired.setMag(this.maxSpeed);
+      let steer = p5.Vector.sub(desired, this.vel);
+      steer.limit(this.maxForce);
+      this.vel.add(steer);
+    }
   }
 
   show() {
