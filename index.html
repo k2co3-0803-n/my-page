@@ -12,6 +12,7 @@
       line-height: 1.6; 
       background-color: #000;
       color: #fff;
+      overflow: hidden; /* Hide scrollbars during video playback */
     }
     #p5-canvas {
       position: fixed;
@@ -21,7 +22,17 @@
       height: 100%;
       z-index: -1;
     }
+    #intro-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 10;
+    }
     .container { 
+      display: none; /* Initially hidden */
       max-width: 800px; 
       margin: 20px auto; 
       padding: 0 20px; 
@@ -30,6 +41,8 @@
       background-color: rgba(0, 0, 0, 0.7);
       border-radius: 10px;
       padding: 20px;
+      height: 100vh;
+      overflow-y: auto; /* Allow scrolling for the container */
     }
     h1, h2 { color: #fff; }
     h2 { border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 40px;}
@@ -46,8 +59,9 @@
   </style>
 </head>
 <body>
+  <video id="intro-video" src="衛星QKD映像生成.mp4" muted autoplay playsinline></video>
   <div id="p5-canvas"></div>
-  <div class="container">
+  <div id="main-content" class="container">
     <header class="header">
       <img src="portrait.JPG" alt="Kosuke Chino">
       <div>
@@ -169,5 +183,37 @@
     </section>
 
   </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const video = document.getElementById('intro-video');
+      const mainContent = document.getElementById('main-content');
+      const p5Canvas = document.getElementById('p5-canvas');
+
+      function showMainContent() {
+        video.style.display = 'none';
+        mainContent.style.display = 'block';
+        document.body.style.overflow = 'auto';
+      }
+
+      // Check if the video has been played in this session
+      if (sessionStorage.getItem('videoPlayed')) {
+        showMainContent();
+      } else {
+        // Play the video
+        video.play().catch(error => {
+          // Autoplay was prevented.
+          console.log("Autoplay was prevented. Showing content directly.", error);
+          showMainContent();
+        });
+
+        video.onended = () => {
+          showMainContent();
+          // Set a flag in sessionStorage so it doesn't play again
+          sessionStorage.setItem('videoPlayed', 'true');
+        };
+      }
+    });
+  </script>
 </body>
 </html>
